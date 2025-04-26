@@ -1,48 +1,42 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { nanoid } from "nanoid";
+import Contact from "../models/contact.js";
 
-const contactsPath = path.resolve("db", "contacts.json");
-
-const updateContacts = (contacts) =>
-  fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-
+// Отримати всі контакти
 export const listContacts = async () => {
-  const data = await fs.readFile(contactsPath, "utf-8");
-  return JSON.parse(data);
+  const contacts = await Contact.findAll();
+  return contacts;
 };
 
-export const getContactById = async (contactId) => {
-  const contacts = await listContacts();
-  return contacts.find((contact) => contact.id === contactId) || null;
+// Отримати контакт за ID
+export const getContactById = async (id) => {
+  const contact = await Contact.findByPk(id);
+  return contact;
 };
 
-export const removeContactById = async (contactId) => {
-  const contacts = await listContacts();
-  const index = contacts.findIndex((contact) => contact.id === contactId);
-  if (index === -1) return null;
-  const [removedContact] = contacts.splice(index, 1);
-  await updateContacts(contacts);
-  return removedContact;
-};
-
+// Додати новий контакт
 export const addContact = async (data) => {
-  const contacts = await listContacts();
-  const newContact = {
-    id: nanoid(),
-    ...data,
-  };
-  contacts.push(newContact);
-  await updateContacts(contacts);
+  const newContact = await Contact.create(data);
   return newContact;
 };
-export const updateContact = async (contactId, data) => {
-  const contacts = await listContacts();
-  const index = contacts.findIndex((contact) => contact.id === contactId);
+// Видалити контакт за ID
+export const removeContactById = async (id) => {
+  const contact = await Contact.findByPk(id);
+  if (!contact) return null;
+  await contact.destroy();
+  return contact;
+};
 
-  if (index === -1) return null;
+// Оновити контакт за ID
+export const updateContact = async (id, data) => {
+  const contact = await Contact.findByPk(id);
+  if (!contact) return null;
+  await contact.update(data);
+  return contact;
+};
+// Нова функція для оновлення тільки поля favorite
+export const updateStatusContact = async (id, { favorite }) => {
+  const contact = await Contact.findByPk(id);
+  if (!contact) return null;
 
-  contacts[index] = { ...contacts[index], ...data };
-  await updateContacts(contacts);
-  return contacts[index];
+  await contact.update({ favorite });
+  return contact;
 };

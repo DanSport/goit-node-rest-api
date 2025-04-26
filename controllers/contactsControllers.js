@@ -2,6 +2,7 @@ import * as contactsService from "../services/contactsServices.js";
 import {
   createContactSchema,
   updateContactSchema,
+  updateFavoriteSchema,
 } from "../schemas/contactsSchemas.js";
 import HttpError from "../helpers/HttpError.js";
 
@@ -53,6 +54,26 @@ export const createContact = async (req, res, next) => {
 
     const newContact = await contactsService.addContact(req.body);
     res.status(201).json(newContact);
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateFavoriteStatus = async (req, res, next) => {
+  try {
+    
+    const { error } = updateFavoriteSchema.validate(req.body);
+    if (error) {
+      throw HttpError(400, error.message);
+    }
+
+    const { id } = req.params;
+    const updated = await contactsService.updateStatusContact(id, req.body);
+
+    if (!updated) {
+      throw HttpError(404, "Not found");
+    }
+
+    res.status(200).json(updated);
   } catch (error) {
     next(error);
   }
