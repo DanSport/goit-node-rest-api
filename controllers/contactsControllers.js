@@ -8,10 +8,24 @@ import HttpError from "../helpers/HttpError.js";
 
 export const getAllContacts = async (req, res, next) => {
   try {
-    const contacts = await contactsService.listContacts();
-    res.status(200).json(contacts);
-  } catch (error) {
-    next(error);
+    const ownerId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    let favorite;
+    if (req.query.favorite !== undefined) {
+      if (req.query.favorite === "true") favorite = true;
+      else if (req.query.favorite === "false") favorite = false;
+      else throw HttpError(400, "favorite must be 'true' or 'false'");
+    }
+
+    const result = await contactsService.listContacts(ownerId, {
+      page,
+      limit,
+      favorite,
+    });
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -52,10 +66,16 @@ export const createContact = async (req, res, next) => {
       throw HttpError(400, error.message);
     }
 
-    const newContact = await contactsService.addContact(req.body);
+    const owner = req.user.id;
+
+    const newContact = await contactsService.addContact({
+      ...req.body,
+      owner,
+    });
+
     res.status(201).json(newContact);
-  } catch (error) {
-    next(error);
+  } catch (err) {
+    next(err);
   }
 };
 export const updateFavoriteStatus = async (req, res, next) => {

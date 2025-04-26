@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../db/sequelize.js";
+import sequelize from "../db/connection.js";
 
 const Contact = sequelize.define(
   "contact",
@@ -20,10 +20,19 @@ const Contact = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    owner: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "users",
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
   },
   {
     tableName: "contacts",
-    timestamps: false, 
+    timestamps: false,
   }
 );
 

@@ -1,15 +1,20 @@
-import pkg from "pg";
-const { Pool } = pkg;
+import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
 
-const pool = new Pool({
-  host: "dpg-d06e1dali9vc73e9a3s0-a.frankfurt-postgres.render.com",
-  port: 5432, 
-  database: "db_contacts_m93k", 
-  user: "db_contacts_m93k_user",
-  password: "sBBWn8V2Se8TwibrxmlydhXGOMRwYqq", 
-  ssl: {
-    rejectUnauthorized: false, // Render вимагає SSL-підключення
-  },
+dotenv.config();
+
+const { PG_HOST, PG_PORT, PG_DATABASE, PG_USER, PG_PASSWORD, PG_SSL } =
+  process.env;
+
+const sequelize = new Sequelize(PG_DATABASE, PG_USER, PG_PASSWORD, {
+  host: PG_HOST,
+  port: PG_PORT,
+  dialect: "postgres",
+  dialectOptions:
+    PG_SSL === "true"
+      ? { ssl: { require: true, rejectUnauthorized: false } }
+      : {},
+  logging: false,
 });
 
-export default pool;
+export default sequelize;

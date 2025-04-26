@@ -1,18 +1,22 @@
-import sequelize from "./sequelize.js";
-import Contact from "./models/Contact.js";
+import sequelize from "./connection.js"; 
+import User from "../models/users.js"; 
+import Contact from "../models/contact.js";
+
+User.hasMany(Contact, { foreignKey: "owner", as: "contacts" });
+Contact.belongsTo(User, { foreignKey: "owner", as: "ownerInfo" });
 
 const initDb = async () => {
   try {
-    await sequelize.authenticate(); // Перевірка підключення
-    console.log("✅ Connection has been established successfully.");
+    await sequelize.authenticate();
+    console.log("✅ Database connection successful");
 
-    await Contact.sync(); // Створює таблицю, якщо немає
-    console.log("✅ Contact table created (or already exists).");
+
+    await sequelize.sync({ alter: true });
+    console.log("✅ All models were synchronized (alter) successfully.");
   } catch (error) {
-    console.error("❌ Unable to connect to the database:", error.message);
-  } finally {
-    await sequelize.close(); // Закриваємо з'єднання
+    console.error("❌ Database initialization failed:", error.message);
+    process.exit(1);
   }
 };
 
-initDb();
+export default initDb;

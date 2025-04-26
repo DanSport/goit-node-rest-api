@@ -1,9 +1,28 @@
 import Contact from "../models/contact.js";
 
 // Отримати всі контакти
-export const listContacts = async () => {
-  const contacts = await Contact.findAll();
-  return contacts;
+export const listContacts = async (ownerId, { page = 1, limit = 20, favorite }) => {
+  const where = { owner: ownerId };
+  if (favorite !== undefined) {
+    where.favorite = favorite;
+  }
+  const offset = (page - 1) * limit;
+
+  const { rows, count } = await Contact.findAndCountAll({
+    where,
+    limit,
+    offset,
+    order: [["id", "ASC"]],
+  });
+  const totalPages = Math.ceil(count / limit);
+
+  return {
+    contacts: rows,
+    page,
+    limit,
+    totalPages,
+    total: count,
+  };
 };
 
 // Отримати контакт за ID
