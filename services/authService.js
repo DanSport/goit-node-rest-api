@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
 import User from "../models/users.js";
 
 const { JWT_SECRET, JWT_EXPIRES_IN = "1h" } = process.env;
@@ -12,8 +13,13 @@ export const register = async ({ email, password }) => {
     throw err;
   }
   const hash = await bcrypt.hash(password, 10);
-  const user = await User.create({ email, password: hash });
-  return { email: user.email, subscription: user.subscription };
+  const avatarURL = gravatar.url(email, {s: "250", d: "identicon",});
+  const user = await User.create({ email, password: hash, avatarURL, });
+  return {
+    email: user.email,
+    subscription: user.subscription,
+    avatarURL: user.avatarURL,
+  };
 };
 
 export const login = async ({ email, password }) => {
@@ -30,7 +36,7 @@ export const login = async ({ email, password }) => {
 
   return {
     token,
-    user: { email: user.email, subscription: user.subscription },
+    user: { email: user.email, subscription: user.subscription, avatarURL: user.avatarURL, },
   };
 };
 

@@ -5,8 +5,10 @@ import {
   logoutController,
   currentController,
   subscriptionController,
+  updateAvatarController,
 } from "../controllers/authControllers.js";
 import { authenticate } from "../middlewares/authenticate.js";
+import upload from "../middlewares/upload.js";
 
 const router = express.Router();
 
@@ -15,5 +17,6 @@ router.post("/login", loginController);
 router.post("/logout", authenticate, logoutController);
 router.get("/current", authenticate, currentController);
 router.patch("/subscription", authenticate, subscriptionController);
+router.patch("/avatars", authenticate, upload.single("avatar"), updateAvatarController);
 
 export default router;

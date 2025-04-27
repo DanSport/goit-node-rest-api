@@ -4,13 +4,15 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-
+import path from "node:path";
 import initDb from "./db/initDb.js";
 import authRouter from "./routes/authRouter.js";
 import contactsRouter from "./routes/contactsRouter.js";
 import { authenticate } from "./middlewares/authenticate.js";
 
 const app = express();
+
+app.use("/avatars",express.static(path.join(process.cwd(), "public", "avatars")) );
 
 app.use(cors());
 app.use(morgan("dev"));

@@ -1,5 +1,9 @@
 import * as authService from "../services/authService.js";
-import { registerSchema, loginSchema } from "../schemas/authSchemas.js";
+import {
+  registerSchema,
+  loginSchema,
+  subscriptionSchema,
+} from "../schemas/authSchemas.js";
 import HttpError from "../helpers/HttpError.js";
 
 export const registerController = async (req, res, next) => {
@@ -40,8 +44,8 @@ export const logoutController = async (req, res, next) => {
 
 export const currentController = async (req, res, next) => {
   try {
-    const { email, subscription } = req.user;
-    res.status(200).json({ email, subscription });
+    const { email, subscription, avatarURL } = req.user;
+    res.status(200).json({ email, subscription, avatarURL });
   } catch (err) {
     next(err);
   }
@@ -60,7 +64,33 @@ export const subscriptionController = async (req, res, next) => {
 
     res
       .status(200)
-      .json({ email: updated.email, subscription: updated.subscription });
+      .json({
+        email: updated.email,
+        subscription: updated.subscription,
+        avatarURL: updated.avatarURL,
+      });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateAvatarController = async (req, res, next) => {
+  try {
+    if (!req.file) throw HttpError(400, "No file uploaded");
+
+    const { path: tempPath, originalname } = req.file;
+    const ext = path.extname(originalname);
+    const fileName = `${req.user.id}${ext}`;
+    const avatarsDir = path.join(process.cwd(), "public", "avatars");
+    const resultPath = path.join(avatarsDir, fileName);
+
+    await fs.rename(tempPath, resultPath);
+
+    const avatarURL = `/avatars/${fileName}`;
+    req.user.avatarURL = avatarURL;
+    await req.user.save();
+
+    res.status(200).json({ avatarURL });
   } catch (err) {
     next(err);
   }
