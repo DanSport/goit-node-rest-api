@@ -38,3 +38,9 @@ export const updateSubscription = async (userId, subscription) => {
   await user.save();
   return user;
 };
+export const resendVerifyEmailSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "any.required": "missing required field email",
+    "string.email": "Email must be a valid email",
+  }),
+});

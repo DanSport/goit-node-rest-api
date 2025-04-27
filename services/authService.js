@@ -1,7 +1,10 @@
+// src/services/authService.js
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
+import { v4 as uuidv4 } from "uuid";
 import User from "../models/users.js";
+import { sendVerifyEmail } from "./emailService.js";
 
 const { JWT_SECRET, JWT_EXPIRES_IN = "1h" } = process.env;
 
@@ -12,9 +15,21 @@ export const register = async ({ email, password }) => {
     err.status = 409;
     throw err;
   }
+
   const hash = await bcrypt.hash(password, 10);
-  const avatarURL = gravatar.url(email, {s: "250", d: "identicon",});
-  const user = await User.create({ email, password: hash, avatarURL, });
+  const avatarURL = gravatar.url(email, { s: "250", d: "identicon" });
+  const verifyToken = uuidv4();
+
+  const user = await User.create({
+    email,
+    password: hash,
+    avatarURL,
+    verify: false,
+    verifyToken,
+  });
+
+  await sendVerifyEmail({ to: email, token: verifyToken });
+
   return {
     email: user.email,
     subscription: user.subscription,
@@ -24,7 +39,7 @@ export const register = async ({ email, password }) => {
 
 export const login = async ({ email, password }) => {
   const user = await User.findOne({ where: { email } });
-  if (!user) return null;
+  if (!user || !user.verify) return null;
 
   const match = await bcrypt.compare(password, user.password);
   if (!match) return null;
@@ -36,7 +51,11 @@ export const login = async ({ email, password }) => {
 
   return {
     token,
-    user: { email: user.email, subscription: user.subscription, avatarURL: user.avatarURL, },
+    user: {
+      email: user.email,
+      subscription: user.subscription,
+      avatarURL: user.avatarURL,
+    },
   };
 };
 

@@ -10,8 +10,8 @@ const initDb = async () => {
     await sequelize.authenticate();
     console.log("✅ Database connection successful");
 
-
     await sequelize.sync({ alter: true });
+    //await sequelize.sync({ force: true }); // Use this line to drop and recreate tables
     console.log("✅ All models were synchronized (alter) successfully.");
   } catch (error) {
     console.error("❌ Database initialization failed:", error.message);

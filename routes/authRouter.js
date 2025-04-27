@@ -6,6 +6,8 @@ import {
   currentController,
   subscriptionController,
   updateAvatarController,
+  verifyEmailController,
+  resendVerifyController,
 } from "../controllers/authControllers.js";
 import { authenticate } from "../middlewares/authenticate.js";
 import upload from "../middlewares/upload.js";
@@ -13,6 +15,8 @@ import upload from "../middlewares/upload.js";
 const router = express.Router();
 
 router.post("/register", registerController);
+router.post("/verify", resendVerifyController); 
+router.get("/verify/:verificationToken", verifyEmailController); 
 router.post("/login", loginController);
 router.post("/logout", authenticate, logoutController);
 router.get("/current", authenticate, currentController);
